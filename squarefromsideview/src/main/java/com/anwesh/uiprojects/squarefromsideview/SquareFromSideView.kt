@@ -183,4 +183,25 @@ class SquareFromSideView(ctx : Context) : View(ctx) {
             curr.startUpdating(cb)
         }
     }
+
+    data class Renderer(var view : SquareFromSideView) {
+        private val animator : Animator = Animator(view)
+        private val sfs : SquareFromSide = SquareFromSide(0)
+
+        fun render(canvas : Canvas, paint : Paint) {
+            canvas.drawColor(backColor)
+            sfs.draw(canvas, paint)
+            animator.animate {
+                sfs.update {i, scl ->
+                    animator.stop()
+                }
+            }
+        }
+
+        fun handleTap() {
+            sfs.startUpdating {
+                animator.start()
+            }
+        }
+    }
 }
