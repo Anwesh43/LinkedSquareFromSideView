@@ -20,6 +20,8 @@ val scDiv : Double = 0.51
 val sizeFactor : Float = 2.9f
 val foreColor : Int = Color.parseColor("#4527A0")
 val backColor : Int = Color.parseColor("#BDBDBD")
+val delay : Long = 20
+val strokeFactor : Int = 90
 
 fun Int.inverse() : Float = 1f / this
 fun Float.maxScale(i : Int, n : Int) : Float = Math.max(0f, this - i * n.inverse())
@@ -27,7 +29,7 @@ fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale
 fun Float.scaleFactor() : Float = Math.floor(this / scDiv).toFloat()
 fun Float.mirrorValue(a : Int, b : Int) : Float = (1 - scaleFactor()) * a.inverse() + scaleFactor() * b.inverse()
 fun Float.updateValue(dir : Float, a : Int, b : Int) : Float = mirrorValue(a, b) * dir * scGap
-fun Int.sf() : Float = 1f - 2 * this
+fun Int.sf() : Float = 1f - 2 * (this % 2)
 
 fun Canvas.drawSFSNode(i : Int, scale : Float, paint : Paint) {
     val w : Float = width.toFloat()
@@ -37,14 +39,19 @@ fun Canvas.drawSFSNode(i : Int, scale : Float, paint : Paint) {
     val sc2 : Float = scale.divideScale(1, 2)
     val size : Float = gap / sizeFactor
     paint.color = foreColor
-    val hGap : Float = size / (squares)
+    paint.strokeWidth = Math.min(w, h) / strokeFactor
+    paint.strokeCap = Paint.Cap.ROUND
+    val hGap : Float = (2 * size) / (squares)
     save()
-    translate(w / 2, hGap * (i + 1))
+    translate(w / 2, gap * (i + 1))
     rotate(90f * sc2)
     for (j in 0..(squares - 1)) {
-        val sc : Float = sc1.divideScale(j, 2)
+        val sc : Float = sc1.divideScale(j, squares)
         save()
-        translate((w/ 2 + hGap / 2) * j.sf() * sc, size - hGap * (j + 1))
+        translate((w/ 2 + hGap / 2) * j.sf() * (1 - sc), size - hGap * (j + 1))
+        paint.style = Paint.Style.FILL
+        drawRect(RectF(-hGap / 2, 0f, hGap / 2, hGap), paint)
+        paint.style = Paint.Style.STROKE
         drawRect(RectF(-hGap / 2, 0f, hGap / 2, hGap), paint)
         restore()
     }
@@ -96,7 +103,7 @@ class SquareFromSideView(ctx : Context) : View(ctx) {
             if (animated) {
                 cb()
                 try {
-                    Thread.sleep(50)
+                    Thread.sleep(delay)
                     view.invalidate()
                 } catch(ex : Exception) {
 
