@@ -206,4 +206,13 @@ class SquareFromSideView(ctx : Context) : View(ctx) {
             }
         }
     }
+
+    companion object {
+
+        fun create(activity : Activity) : SquareFromSideView {
+            val view : SquareFromSideView = SquareFromSideView(activity)
+            activity.setContentView(view)
+            return view
+        }
+    }
 }
